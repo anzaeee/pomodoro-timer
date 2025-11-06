@@ -21,16 +21,19 @@ const PomodoroTimer = ({ preferences, customPresets = [], onPresetsUpdate, isAut
   const [mode, setMode] = useState('work'); // 'work', 'shortBreak', 'longBreak'
   const [pomodoroCount, setPomodoroCount] = useState(0);
   const [bubbleAnimation, setBubbleAnimation] = useState('');
+  const [customMode, setCustomMode] = useState(false);
+  const [customDurations, setCustomDurations] = useState({
+    work: 25,
+    shortBreak: 5,
+    longBreak: 15,
+  });
   const intervalRef = useRef(null);
   const autoStartRef = useRef(false);
   const modeRef = useRef('work');
 
-  // Test mode: 30 seconds for all intervals
-  const TEST_MODE = process.env.NODE_ENV === 'development' || window.location.search.includes('test=true');
-  
-  const workDuration = TEST_MODE ? 0.5 : (preferences?.workDuration || 25); // 0.5 minutes = 30 seconds
-  const shortBreak = TEST_MODE ? 0.5 : (preferences?.shortBreak || 5);
-  const longBreak = TEST_MODE ? 0.5 : (preferences?.longBreak || 15);
+  const workDuration = customMode ? customDurations.work : (preferences?.workDuration || 25);
+  const shortBreak = customMode ? customDurations.shortBreak : (preferences?.shortBreak || 5);
+  const longBreak = customMode ? customDurations.longBreak : (preferences?.longBreak || 15);
   const longBreakInterval = preferences?.longBreakInterval || 4;
   const autoStartBreaks = preferences?.autoStartBreaks ?? true;
   const autoStartPomodoros = preferences?.autoStartPomodoros ?? false;
@@ -44,7 +47,7 @@ const PomodoroTimer = ({ preferences, customPresets = [], onPresetsUpdate, isAut
     } else {
       setTimeLeft(longBreak * 60);
     }
-  }, [mode, workDuration, shortBreak, longBreak]);
+  }, [mode, workDuration, shortBreak, longBreak, customMode]);
 
   useEffect(() => {
     if (isRunning) {
@@ -74,7 +77,7 @@ const PomodoroTimer = ({ preferences, customPresets = [], onPresetsUpdate, isAut
       }
       autoStartRef.current = false;
     }
-  }, [mode, autoStartBreaks, autoStartPomodoros]);
+  }, [mode, autoStartBreaks, autoStartPomodoros, customMode]);
 
   // Animate bubble when mode changes
   useEffect(() => {
@@ -154,6 +157,10 @@ const PomodoroTimer = ({ preferences, customPresets = [], onPresetsUpdate, isAut
     setPomodoroCount(0);
     setMode('work');
     setTimeLeft(workDuration * 60);
+    // Reset custom mode
+    if (customMode) {
+      setCustomMode(false);
+    }
   };
 
   const formatTime = (seconds) => {
@@ -250,17 +257,17 @@ const PomodoroTimer = ({ preferences, customPresets = [], onPresetsUpdate, isAut
               boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
             }}
           />
-          {TEST_MODE && (
+          {customMode && (
             <Chip
-              label="TEST MODE (30s)"
-              color="warning"
+              label="CUSTOM MODE"
+              color="info"
               className="rounded-full px-3 py-1 text-xs font-semibold shadow-md"
               sx={{
                 borderRadius: '9999px',
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 fontWeight: 600,
                 padding: { xs: '4px 12px', sm: '6px 16px' },
-                boxShadow: '0 2px 12px rgba(255, 152, 0, 0.3)',
+                boxShadow: '0 2px 12px rgba(96, 165, 250, 0.3)',
               }}
             />
           )}
@@ -292,7 +299,7 @@ const PomodoroTimer = ({ preferences, customPresets = [], onPresetsUpdate, isAut
           }}
         >
           <Box
-            className={`relative ${bubbleAnimation} ${isRunning ? 'animate-pulse-slow' : 'animate-float'}`}
+            className={`relative ${bubbleAnimation} ${isRunning ? 'animate-pulse-slow' : ''}`}
             sx={{
               position: 'relative',
               width: { xs: '260px', sm: '300px', md: '320px' },
@@ -312,7 +319,7 @@ const PomodoroTimer = ({ preferences, customPresets = [], onPresetsUpdate, isAut
                 background: getBubbleGradient(),
                 opacity: 0.2,
                 filter: 'blur(30px)',
-                animation: isRunning ? 'pulse 2s ease-in-out infinite' : 'float 3s ease-in-out infinite',
+                animation: isRunning ? 'pulse 2s ease-in-out infinite' : 'none',
               }}
             />
             
@@ -477,6 +484,11 @@ const PomodoroTimer = ({ preferences, customPresets = [], onPresetsUpdate, isAut
           workDuration={workDuration}
           shortBreak={shortBreak}
           longBreak={longBreak}
+          customMode={customMode}
+          onCustomModeChange={setCustomMode}
+          customDurations={customDurations}
+          onCustomDurationsChange={setCustomDurations}
+          isAuthenticated={isAuthenticated}
         />
       </Paper>
     </Box>

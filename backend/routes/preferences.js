@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const prisma = require('../config/database');
 const authMiddleware = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     res.json({ preferences });
   } catch (error) {
-    console.error('Get preferences error:', error);
+    logger.error('Get preferences error', { error: error.message, stack: error.stack, userId: req.user.id });
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -93,12 +94,13 @@ router.put(
         });
       }
 
+      logger.info('Preferences updated', { userId: req.user.id });
       res.json({
         message: 'Preferences updated successfully',
         preferences,
       });
     } catch (error) {
-      console.error('Update preferences error:', error);
+      logger.error('Update preferences error', { error: error.message, stack: error.stack, userId: req.user.id });
       res.status(500).json({ message: 'Server error' });
     }
   }

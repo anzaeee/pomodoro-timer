@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const prisma = require('../config/database');
 const authMiddleware = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     res.json({ presets });
   } catch (error) {
-    console.error('Get presets error:', error);
+    logger.error('Get presets error', { error: error.message, stack: error.stack, userId: req.user.id });
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -70,12 +71,13 @@ router.post(
         },
       });
 
+      logger.info('Preset created', { userId: req.user.id, presetId: preset.id });
       res.status(201).json({
         message: 'Preset created successfully',
         preset,
       });
     } catch (error) {
-      console.error('Create preset error:', error);
+      logger.error('Create preset error', { error: error.message, stack: error.stack, userId: req.user.id });
       res.status(500).json({ message: 'Server error' });
     }
   }
@@ -136,12 +138,13 @@ router.put(
         },
       });
 
+      logger.info('Preset updated', { userId: req.user.id, presetId: req.params.id });
       res.json({
         message: 'Preset updated successfully',
         preset,
       });
     } catch (error) {
-      console.error('Update preset error:', error);
+      logger.error('Update preset error', { error: error.message, stack: error.stack, userId: req.user.id, presetId: req.params.id });
       res.status(500).json({ message: 'Server error' });
     }
   }
@@ -166,9 +169,10 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       where: { id: req.params.id },
     });
 
+    logger.info('Preset deleted', { userId: req.user.id, presetId: req.params.id });
     res.json({ message: 'Preset deleted successfully' });
   } catch (error) {
-    console.error('Delete preset error:', error);
+    logger.error('Delete preset error', { error: error.message, stack: error.stack, userId: req.user.id, presetId: req.params.id });
     res.status(500).json({ message: 'Server error' });
   }
 });

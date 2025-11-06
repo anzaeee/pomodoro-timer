@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const prisma = require('../config/database');
 const authMiddleware = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -63,13 +64,14 @@ router.post(
         expiresIn: '7d',
       });
 
+      logger.info('User registered', { userId: user.id, email: user.email });
       res.status(201).json({
         message: 'User created successfully',
         token,
         user,
       });
     } catch (error) {
-      console.error('Registration error:', error);
+      logger.error('Registration error', { error: error.message, stack: error.stack });
       res.status(500).json({ message: 'Server error' });
     }
   }
@@ -112,6 +114,7 @@ router.post(
         expiresIn: '7d',
       });
 
+      logger.info('User logged in', { userId: user.id, email: user.email });
       res.json({
         message: 'Login successful',
         token,
@@ -122,7 +125,7 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error('Login error', { error: error.message, stack: error.stack });
       res.status(500).json({ message: 'Server error' });
     }
   }
@@ -143,7 +146,7 @@ router.get('/me', authMiddleware, async (req, res) => {
 
     res.json({ user });
   } catch (error) {
-    console.error('Get user error:', error);
+    logger.error('Get user error', { error: error.message, stack: error.stack, userId: req.user.id });
     res.status(500).json({ message: 'Server error' });
   }
 });
