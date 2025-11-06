@@ -1,6 +1,105 @@
 # Contributing to Pomodoro Timer
 
-Thank you for your interest in contributing to the Pomodoro Timer project! This document outlines the commit message conventions we follow.
+Thank you for your interest in contributing to the Pomodoro Timer project! This document outlines the commit message conventions we follow and the branching strategy.
+
+## Branching Strategy
+
+This project uses a three-branch workflow:
+
+### Main Branch (`main`)
+- **Purpose**: Production-ready code
+- **Status**: Stable, tested, and deployed to production
+- **Protection**: Protected branch - requires pull request and approval
+- **Merges From**: `staging` branch only
+- **Deployment**: Automatically deployed to production environment
+
+### Staging Branch (`staging`)
+- **Purpose**: Pre-production testing and QA
+- **Status**: Feature-complete, ready for final testing
+- **Protection**: Protected branch - requires pull request
+- **Merges From**: `development` branch
+- **Deployment**: Automatically deployed to staging environment
+- **Use Case**: Final testing before production release
+
+### Development Branch (`development`)
+- **Purpose**: Active development and integration
+- **Status**: Work in progress, may be unstable
+- **Protection**: Open for direct pushes (team members)
+- **Merges From**: Feature branches
+- **Deployment**: May be deployed to development environment
+- **Use Case**: Integration of features from feature branches
+
+### Feature Branches
+- **Naming**: `feat/feature-name`, `fix/bug-name`, `refactor/component-name`
+- **Purpose**: Individual features, bug fixes, or refactoring
+- **Merges To**: `development` branch
+- **Lifecycle**: Created from `development`, merged back to `development`, then deleted
+
+## Workflow
+
+```
+main (production)
+  ↑
+staging (pre-production)
+  ↑
+development (active development)
+  ↑
+feature branches (individual work)
+```
+
+### Typical Development Flow
+
+1. **Create Feature Branch**
+   ```bash
+   git checkout development
+   git pull origin development
+   git checkout -b feat/new-feature
+   ```
+
+2. **Develop and Commit**
+   ```bash
+   # Make changes
+   git add .
+   git commit -m "feat(timer): add custom duration support"
+   git push origin feat/new-feature
+   ```
+
+3. **Merge to Development**
+   - Create merge request from `feat/new-feature` → `development`
+   - Review and approve
+   - Merge and delete feature branch
+
+4. **Merge to Staging**
+   - When features are ready for testing
+   - Create merge request from `development` → `staging`
+   - Review and approve
+   - Deploy to staging environment for QA
+
+5. **Merge to Main**
+   - After successful QA testing
+   - Create merge request from `staging` → `main`
+   - Review and approve
+   - Deploy to production environment
+
+## Branch Protection Rules
+
+### Main Branch
+- ✅ Require pull request
+- ✅ Require approvals (minimum 1)
+- ✅ Require status checks to pass
+- ✅ Require branches to be up to date
+- ❌ No direct pushes
+
+### Staging Branch
+- ✅ Require pull request
+- ✅ Require status checks to pass
+- ❌ No direct pushes (except maintainers)
+
+### Development Branch
+- ⚠️ Direct pushes allowed (team members)
+- ✅ Recommended: Use feature branches and merge requests
+
+## Commit Message Conventions
 
 ## Conventional Commits
 
