@@ -1,0 +1,79 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+build:backend:
+  stage: build
+  script:
+    - cd backend
+    - docker build -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_REF_SLUG -t $CI_REGISTRY_IMAGE/backend:latest .
+    - docker push $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE/backend:latest
+  only:
+    - main
+    - develop
+
+build:frontend:
+  stage: build
+  script:
+    - cd frontend
+    - docker build -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_REF_SLUG -t $CI_REGISTRY_IMAGE/frontend:latest .
+    - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE/frontend:latest
+  only:
+    - main
+    - develop
+
+test:backend:
+  stage: test
+  script:
+    - cd backend
+    - npm install
+    - npm test || true
+  only:
+    - main
+    - develop
+    - merge_requests
+
+test:frontend:
+  stage: test
+  script:
+    - cd frontend
+    - npm install
+    - npm test -- --watchAll=false || true
+  only:
+    - main
+    - develop
+    - merge_requests
+
+deploy:staging:
+  stage: deploy
+  script:
+    - echo "Deploy to staging environment"
+    - docker-compose -f docker-compose.staging.yml up -d
+  environment:
+    name: staging
+    url: https://staging.pomodoro.example.com
+  only:
+    - develop
+
+deploy:production:
+  stage: deploy
+  script:
+    - echo "Deploy to production environment"
+    - docker-compose -f docker-compose.prod.yml up -d
+  environment:
+    name: production
+    url: https://pomodoro.example.com
+  only:
+    - main
+  when: manual
+

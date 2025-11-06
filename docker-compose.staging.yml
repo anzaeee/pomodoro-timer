@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: pomodoro-db-staging
+    environment:
+      POSTGRES_USER: ${DB_USER:-pomodoro_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-pomodoro_password}
+      POSTGRES_DB: ${DB_NAME:-pomodoro_db}
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-pomodoro_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ${CI_REGISTRY_IMAGE}/backend:latest
+    container_name: pomodoro-backend-staging
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-pomodoro_user}:${DB_PASSWORD:-pomodoro_password}@database:5432/${DB_NAME:-pomodoro_db}
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: 5000
+      NODE_ENV: staging
+    ports:
+      - "5000:5000"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  frontend:
+    image: ${CI_REGISTRY_IMAGE}/frontend:latest
+    container_name: pomodoro-frontend-staging
+    environment:
+      REACT_APP_API_URL: ${API_URL:-http://localhost:5000}
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data_staging:
+
