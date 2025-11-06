@@ -310,12 +310,12 @@ We welcome contributions! Please follow our commit message conventions.
 2. Create a feature branch
 3. Make your changes
 4. Add tests
-5. Follow [Conventional Commits](CONTRIBUTING.md) for commit messages
+5. Follow commit message conventions (see [CONTRIBUTING.md](CONTRIBUTING.md))
 6. Submit a pull request
 
 ### Commit Message Format
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/). See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+This project follows [Conventional Commits](https://www.conventionalcommits.org/). See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Quick Reference:**
 - `feat:` - New feature
