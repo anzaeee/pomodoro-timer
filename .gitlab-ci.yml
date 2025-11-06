@@ -1,15 +1,62 @@
 stages:
-  - build
   - test
+  - build
   - deploy
 
 variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: "/certs"
+  NODE_VERSION: "18"
 
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
+# Test Backend
+test:backend:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - cd backend
+    - npm ci
+    - npm run prisma:generate
+    - npm test -- --coverage --watchAll=false
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/coverage/cobertura-coverage.xml
+    paths:
+      - backend/coverage/
+    expire_in: 1 week
+  only:
+    - main
+    - staging
+    - merge_requests
+
+# Test Frontend
+test:frontend:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - cd frontend
+    - npm ci
+    - npm test -- --watchAll=false --coverage
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: frontend/coverage/cobertura-coverage.xml
+    paths:
+      - frontend/coverage/
+    expire_in: 1 week
+  only:
+    - main
+    - staging
+    - merge_requests
+
+# Build Backend Docker Image
 build:backend:
   stage: build
   script:
@@ -19,8 +66,10 @@ build:backend:
     - docker push $CI_REGISTRY_IMAGE/backend:latest
   only:
     - main
+    - staging
     - develop
 
+# Build Frontend Docker Image
 build:frontend:
   stage: build
   script:
@@ -30,30 +79,10 @@ build:frontend:
     - docker push $CI_REGISTRY_IMAGE/frontend:latest
   only:
     - main
+    - staging
     - develop
 
-test:backend:
-  stage: test
-  script:
-    - cd backend
-    - npm install
-    - npm test || true
-  only:
-    - main
-    - develop
-    - merge_requests
-
-test:frontend:
-  stage: test
-  script:
-    - cd frontend
-    - npm install
-    - npm test -- --watchAll=false || true
-  only:
-    - main
-    - develop
-    - merge_requests
-
+# Deploy to Staging
 deploy:staging:
   stage: deploy
   script:
@@ -63,8 +92,13 @@ deploy:staging:
     name: staging
     url: https://staging.pomodoro.example.com
   only:
-    - develop
+    - staging
+  when: manual
+  dependencies:
+    - build:backend
+    - build:frontend
 
+# Deploy to Production
 deploy:production:
   stage: deploy
   script:
@@ -76,4 +110,6 @@ deploy:production:
   only:
     - main
   when: manual
-
+  dependencies:
+    - build:backend
+    - build:frontend

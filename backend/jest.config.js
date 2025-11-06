@@ -8,5 +8,7 @@ module.exports = {
     'utils/**/*.js',
     '!**/node_modules/**',
   ],
+  coverageReporters: ['text', 'lcov', 'cobertura'],
+  coverageDirectory: 'coverage',
 };
 
