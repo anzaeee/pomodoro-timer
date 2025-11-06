@@ -304,11 +304,37 @@ ISC
 
 ## 🤝 Contributing
 
+We welcome contributions! Please follow our commit message conventions.
+
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
 4. Add tests
-5. Submit a pull request
+5. Follow [Conventional Commits](CONTRIBUTING.md) for commit messages
+6. Submit a pull request
+
+### Commit Message Format
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/). See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+**Quick Reference:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, etc.)
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+- `build:` - Build system changes
+- `ci:` - CI/CD changes
+
+**Examples:**
+```
+feat(timer): add custom duration support
+fix(backend): resolve database connection issue
+docs: update README with Docker instructions
+chore: update dependencies
+```
 
 ## 📞 Support
 
